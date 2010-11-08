@@ -136,6 +136,9 @@ class EventedMysql < EM::Connection
 
         @processing = true
 
+        log 'queuing', response, sql
+        @current = [Time.now, response, sql, cblk, eblk]
+
         log 'mysql sending', sql
         @mysql.send_query(sql)
       else
@@ -151,9 +154,6 @@ class EventedMysql < EM::Connection
         raise e
       end
     end
-
-    log 'queuing', response, sql
-    @current = [Time.now, response, sql, cblk, eblk]
   end
   
   def close
@@ -173,7 +173,7 @@ class EventedMysql < EM::Connection
   
   def log *args
     return unless @opts[:logging]
-    p [Time.now, @fd, (@signature[-4..-1] if @signature), *args]
+    @opts[:logger].info [Time.now, @fd, *args]
   end
 
   public
