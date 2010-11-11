@@ -34,7 +34,6 @@ class EventedMysql < EM::Connection
   ] unless defined? DisconnectErrors
 
   def notify_readable
-    log 'readable'
     if item = @current
       @current = nil
       start, response, sql, cblk, eblk = item
@@ -136,10 +135,8 @@ class EventedMysql < EM::Connection
 
         @processing = true
 
-        log 'queuing', response, sql
         @current = [Time.now, response, sql, cblk, eblk]
 
-        log 'mysql sending', sql
         @mysql.send_query(sql)
       else
         @@queue << [response, sql, cblk, eblk]
