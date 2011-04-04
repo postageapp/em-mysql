@@ -71,6 +71,8 @@ class EventedMysql < EM::Connection
     end
   rescue Mysql::Error => e
     log 'mysql error', e.message
+    log 'mysql error', [response, sql, cblk, eblk].inspect
+    log 'mysql error', e.backtrace
     if e.message =~ /Deadlock/
       @@queue << [response, sql, cblk, eblk]
       @processing = false
@@ -144,6 +146,8 @@ class EventedMysql < EM::Connection
       end
     rescue Mysql::Error => e
       log 'mysql error', e.message
+      log 'mysql error', [response, sql, cblk, eblk].inspect
+      log 'mysql error', e.backtrace
       if DisconnectErrors.include? e.message
         @@queue << [response, sql, cblk, eblk]
         return close
@@ -170,7 +174,7 @@ class EventedMysql < EM::Connection
   
   def log *args
     return unless @opts[:logging]
-    @opts[:logger].info [Time.now, @fd, *args]
+    @opts[:logger].info [@fd, *args]
   end
 
   public
