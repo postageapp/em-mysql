@@ -50,6 +50,11 @@ raise 'need Sequel >= 3.2.0' unless Sequel::MAJOR == 3 and Sequel::MINOR >= 2
 
 module Sequel
   class Dataset
+    STOCK_COUNT_OPTS = {
+      :select => [LiteralString.new("COUNT(*)").freeze],
+      :order => nil
+    }.freeze
+    
     def async_insert *args, &cb
       EventedMysql.insert insert_sql(*args), &cb
       nil
@@ -128,6 +133,7 @@ module Sequel
       if options_overlap(COUNT_FROM_SELF_OPTS)
         from_self.async_count(&cb)
       else
+        
         clone(STOCK_COUNT_OPTS).async_each{|r|
           yield r.is_a?(Hash) ? r.values.first.to_i : r.values.values.first.to_i
         }
