@@ -71,7 +71,7 @@ module Sequel
     end
 
     def async_delete &cb
-      EventedMysql.execute delete_sql, &cb
+      EventedMysql.execute delete_sql, :delete, &cb
       nil
     end
 

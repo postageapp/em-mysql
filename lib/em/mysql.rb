@@ -49,7 +49,7 @@ class EventedMysql < EM::Connection
               result.each_hash{|h| ret << h }
               log 'mysql result', ret
               ret
-            when :update
+            when :update, :delete, :replace
               result = @mysql.get_result
               @mysql.affected_rows
             when :insert
@@ -73,8 +73,13 @@ class EventedMysql < EM::Connection
     log 'mysql error', e.message
     log 'mysql error', [response, sql, cblk, eblk].inspect
     log 'mysql error', e.backtrace
+
     if e.message =~ /Deadlock/
       @@queue << [response, sql, cblk, eblk]
+      @processing = false
+      next_query
+    elsif e.message.match(/^Duplicate entry/)
+      cblk.call(false) if cblk
       @processing = false
       next_query
     elsif DisconnectErrors.include? e.message
